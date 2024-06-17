@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zombies</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <canvas width="1500" height="1000"></canvas>
+    <script>
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        let game = new Game(ctx);
+        let player = new Block('player', [[0,470,60,60,'blue']]);
+        let zombies = [];
+        let bombs = [];
+        let walls = new Block('wall', [
+            [300,0,20,388,"brown"], // Vertical
+            [300,592,20,204],
+            [500,388,20,408],
+            [1200,0,20,408],
+            [1200,592,20,592],
+
+            [300,796,700,20], // Horizontal
+            [500,184,500,20],
+            [700,388,500,20],
+            [700,592,300,20]
+        ]);
+        player.oncollide = (side, block) => {
+            if (block == 'canvas') {
+                if (side[0][0][0]) player.move(side[0][0][0]*side[0][1][0],0);
+                if (side[0][0][1]) player.move(0,side[0][0][1]*side[0][1][1]);
+            } else if (block.selector == 'bomb') {
+                detonate(block);
+            } else {
+                if (player.speed[0]) player.move(side[0][0][0]*side[0][1][0],0);
+                if (player.speed[1]) player.move(0,side[0][0][1]*side[0][1][1]);
+            }
+        }
+        player.onremove = () => game.stop();
+        function generateRectangle(color, minDistance) {
+            const targ = player.rects[0];
+            
+            function isFarEnough(rect) {
+                let dx = Math.max(targ[0] - (rect[0] + 60), rect[0] - (targ[0] + 60), 0);
+                let dy = Math.max(targ[1] - (rect[1] + 60), rect[1] - (targ[1] + 60), 0);
+                return (dx**2 + dy**2) >= (minDistance**2);
+            }
+            
+            while (1) {
+                let newRect = [Math.floor(Math.random() * (canvas.width - 60)), Math.floor(Math.random() * (canvas.height - 60))];
+                if (isFarEnough(newRect)) return [...newRect, 60, 60, color]
+            }
+        }
+        function detonate(bomb) {
+            game.remove(bomb);
+            let r1 = [bomb.rects[0][0]-200, bomb.rects[0][1]-200, 400, 400, 'rgba(255,0,0,0.4)'];
+            for (let b of game.blocks) {
+                if (b.selector == 'wall') continue;
+                let inZone = false;
+                for (let r2 of b.rects) {
+                    inZone ||= r2[0] >= r1[0] &&
+                    r2[0] <= r1[0] + r1[2] &&
+                    r2[1] >= r1[1] &&
+                    r2[1] <= r1[1] + r1[3];
+                }
+                if (b.selector == 'bomb' && inZone) {
+                    detonate(b);
+                } else if (inZone) game.remove(b);
+            }
+            let rect = new Block('', [r1], true);
+            game.blocks.push(rect);
+            setTimeout(() => game.remove(rect), 700);
+        }
+        let createZombies  = setInterval(() => {
+            let z = new Block('enemy', [generateRectangle('darkgreen', 100)]);
+            zombies.push(z);
+            z.oncollide = (side, block) => {
+                if (block == 'canvas') {
+                    if (side[0][1][0]) z.speed[0] *= Math.sign(z.speed[0]) * -side[0][1][0];
+                    if (side[0][1][1]) z.speed[1] *= Math.sign(z.speed[1]) * -side[0][1][1]; 
+                } else if (block.selector != 'wall') {
+                    if (block.selector == 'bomb') detonate(block);
+                    else game.remove(block);
+                } else {
+                    if (side[0][1][0]) z.speed[0] *= Math.sign(z.speed[0]) * side[0][1][0];
+                    if (side[0][1][1]) z.speed[1] *= Math.sign(z.speed[1]) * side[0][1][1];
+                }
+            }
+            
+            z.speed = [Math.sign(player.x-z.rects[0][0]) * 1, Math.sign(player.y-z.rects[0][1]) * 1];
+    
+            game.blocks.push(z);
+        }, 2000);
+        let createBombs = setInterval(() => {
+            let b = new Block('bomb', [generateRectangle('red', 300)]);
+            game.blocks.push(b);
+        }, 10000);
+        game.blocks.push(player, walls);
+        game.start();
+        document.onkeydown = ev => {
+            switch (ev.keyCode) {
+                case 37: 
+                    player.speed = [-4,0];
+                    break;
+                case 38:
+                    player.speed = [0,-4];
+                    break; 
+                case 39: 
+                    player.speed = [4, 0];
+                    break;
+                case 40: 
+                    player.speed = [0, 4];
+                //     break;
+                // case 69:
+                //     break;
+            }
+        }
+        document.onkeyup = ev => {
+            switch (ev.keyCode) {
+                case 37: 
+                case 39:
+                    player.speed[0] = 0;
+                    break;
+                case 38:
+                case 40: 
+                    player.speed[1] = 0;
+            }
+        }
+    </script>
+</body>

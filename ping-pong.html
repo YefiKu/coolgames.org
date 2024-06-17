@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping pong</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <canvas width="1000" height="1000"></canvas>
+    <script>
+        const canvas = document.querySelector('canvas');
+        let game = new Game(canvas.getContext('2d'));
+        let player = new Block('line', [[0,0,40,200,'red']]);
+        player.set(40, 400);
+        let ball = new Block('ball', [[0,0,40,40,'yellow']]);
+        ball.set(480,480);
+        ball.oncollide = (side, block) => {
+            if (block.selector === 'line') ball.speed[0] *=-1;
+            else if (side[0][1][0] < 0) game.stopped = true;
+            else {
+                if (side[0][1][0]) ball.speed[0] *= Math.sign(ball.speed[0]) * -side[0][1][0];
+                if (side[0][1][1]) ball.speed[1] *= Math.sign(ball.speed[1]) * -side[0][1][1];
+            }
+        }
+        canvas.onmousemove = ev => {
+            let coords = [
+                ev.offsetX * canvas.width / canvas.offsetWidth, 
+                ev.offsetY * canvas.height / canvas.offsetHeight
+            ];
+            player.set(null,coords[1]);
+        }
+        game.blocks.push(player,ball);
+        game.start();
+        setTimeout(() => ball.speed = [(Math.round(Math.random())*2-1)*5, (Math.round(Math.random())*2-1)*5], 3000);
+    </script>
+</body>
+</html>
