@@ -3,6 +3,19 @@ canvas {
     border: red 2px solid;
     height: 90vh;
 }
-aside {
-    background-color: #fffa;
+body {
+    background-color: #459746;
+    width: 100vw;
+    margin: 0;
+}
+h1, h2 {
+    text-align: center;
+}
+.section {
+    margin: 20px auto;
+    padding: 7px;
+    border: 1px black solid;
+    border-radius: 20px;
+    background: linear-gradient(45deg, #00b0b6bb, white, #00b0b6bb);
+    width: 60vw;
 }

@@ -1,0 +1,11 @@
+{
+  "name": "coolgames.org",
+  "version": "1.0.0",
+  "description": "My games",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yefim Kurochkin",
+  "license": "ISC"
+}
