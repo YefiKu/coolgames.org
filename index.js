@@ -4,6 +4,7 @@ const fs = require('fs');
 const PORT = process.env.PORT || 3000;
 // Create an HTTP server
 const server = http.createServer((req, res) => {
+    console.log("Here");
     let page = 'pages' + req.url + '.html';
     switch (req.url) {
         case '/':
