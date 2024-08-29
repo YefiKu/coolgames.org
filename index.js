@@ -1,7 +1,8 @@
 const http = require('http');
 const fs = require('fs');
+
 // Create an HTTP server
-http.createServer((req, res) => {
+const server = http.createServer((req, res) => {
     let page = 'pages' + req.url + '.html';
     switch (req.url) {
         case '/':
@@ -17,8 +18,18 @@ http.createServer((req, res) => {
     }
     console.log(page);
     fs.readFile(page, function(err, data) {
+        if (err) {
+            res.writeHead(404);
+            res.write('Page not found');
+            return res.end();
+        }
         res.writeHead(200);
         res.write(data);
         return res.end();
     });
-}).listen(3000);
+});
+
+// Start the server and listen on port 3000
+server.listen(3000, () => {
+    console.log('Server is listening on port 3000');
+});
